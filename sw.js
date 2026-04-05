@@ -1,5 +1,5 @@
 // غير الرقم لكي يعرف المتصفح أن هذا ملف جديد كلياً
-const CACHE_NAME = "agri-v26";
+const CACHE_NAME = "agri-v27";
 
 const assets = [
   "./",
