@@ -1,5 +1,5 @@
 // غير الرقم لكي يعرف المتصفح أن هذا ملف جديد كلياً
-const CACHE_NAME = "agri-v27";
+const CACHE_NAME = "agri-v29";
 
 const assets = [
   "./",
@@ -11,6 +11,14 @@ const assets = [
   "./js/ui.js",
   "./js/app.js",
   "./vendor/fontawesome/css/all.min.css",
+  "./vendor/fontawesome/webfonts/fa-brands-400.ttf",
+  "./vendor/fontawesome/webfonts/fa-brands-400.woff2",
+  "./vendor/fontawesome/webfonts/fa-regular-400.ttf",
+  "./vendor/fontawesome/webfonts/fa-regular-400.woff2",
+  "./vendor/fontawesome/webfonts/fa-solid-900.ttf",
+  "./vendor/fontawesome/webfonts/fa-solid-900.woff2",
+  "./vendor/fontawesome/webfonts/fa-v4compatibility.ttf",
+  "./vendor/fontawesome/webfonts/fa-v4compatibility.woff2",
 ];
 
 // تنصيب وإجبار على التفعيل الفوري

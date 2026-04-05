@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "1.1.3";
+const APP_VERSION = "2.1.1";
 
 class UIManager {
   constructor() {
@@ -2101,43 +2101,37 @@ class UIManager {
     const originalText = updateBtn.innerHTML;
 
     if (!navigator.onLine) {
-      alert("❌ لا يوجد اتصال بالإنترنت.");
+      alert("❌ يجب أن تكون متصلاً بالإنترنت للبحث عن تحديثات.");
       return;
     }
 
     updateBtn.disabled = true;
     updateBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> جاري جلب التحديث...';
+      '<i class="fas fa-spinner fa-spin"></i> جاري تنظيف النظام وتحديثه...';
 
     try {
-      // 1. إجبار الـ Service Worker على التحديث
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (let reg of registrations) {
-        await reg.update();
-      }
-
-      // 2. مسح الكاش برمجياً (تفريغ الذاكرة القديمة تماماً)
+      // 1. مسح كل الكاش القديم بالكامل
       if ("caches" in window) {
         const cacheNames = await caches.keys();
-        for (let name of cacheNames) {
-          await caches.delete(name);
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+      }
+
+      // 2. إلغاء تسجيل الـ Service Workers القديمة
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let reg of registrations) {
+          await reg.unregister();
         }
       }
 
-      // 3. رسالة للمستخدم وإعادة تحميل قسرية
-      alert(
-        "✨ تم تنظيف الذاكرة وجلب أحدث نسخة! سيتم إعادة تشغيل النظام الآن."
-      );
-
-      // إضافة رقم عشوائي للرابط تمنع المتصفح من استخدام الكاش نهائياً
+      // 3. إعادة تحميل الصفحة من السيرفر مباشرة (تجاهل الكاش)
+      alert("✨ تم تنظيف الذاكرة! سيتم إعادة التشغيل لضمان جلب أحدث نسخة.");
       window.location.href =
-        window.location.origin +
-        window.location.pathname +
-        "?v=" +
-        new Date().getTime();
+        window.location.pathname + "?update=" + new Date().getTime();
     } catch (err) {
-      alert("حدث خطأ أثناء التحديث، يرجى المحاولة لاحقاً.");
-      this.resetUpdateBtn(updateBtn, originalText);
+      alert("حدث خطأ. يرجى المحاولة لاحقاً.");
+      updateBtn.disabled = false;
+      updateBtn.innerHTML = originalText;
     }
   }
   // دالة مساعدة لإعادة شكل الزر
