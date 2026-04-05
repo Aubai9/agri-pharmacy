@@ -8,45 +8,6 @@
     <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" />
     <link rel="icon" type="image/png" href="icons/pharmacy.png" />
     <link rel="manifest" href="manifest.json" />
-    <script>
-      if ("serviceWorker" in navigator) {
-        let refreshing = false;
-
-        // هذا الحدث يعمل تلقائياً بمجرد أن تتفعل النسخة الجديدة ويقوم بعمل ريفريش نظيف
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          if (!refreshing) {
-            window.location.reload();
-            refreshing = true;
-          }
-        });
-
-        navigator.serviceWorker.register("./sw.js").then((reg) => {
-          reg.addEventListener("updatefound", () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener("statechange", () => {
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
-                // ظهرت نسخة جديدة!
-                if (
-                  confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")
-                ) {
-                  document.body.innerHTML += `
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--primary-color); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
-            <i class="fas fa-sync-alt fa-spin" style="font-size: 50px; margin-bottom: 20px;"></i>
-            <h2 style="margin:0;">جاري تثبيت التحديث الجديد...</h2>
-            <p style="margin-top:10px; opacity:0.8;">يرجى الانتظار لحظات ⏳</p>
-        </div>
-    `;
-                  newWorker.postMessage({ type: "SKIP_WAITING" });
-                }
-              }
-            });
-          });
-        });
-      }
-    </script>
   </head>
   <body>
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
@@ -94,7 +55,7 @@
         <div class="sidebar-header">
           <div class="logo">
             <i class="fas fa-leaf"></i>
-            <h1>صيدلية زراعية</h1>
+            <h1>صيدلية زراعية 🎇</h1>
           </div>
         </div>
         <nav class="sidebar-nav">
