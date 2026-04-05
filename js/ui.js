@@ -2,13 +2,17 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "1.0.19";
+const APP_VERSION = "1.0.20";
 
 class UIManager {
   constructor() {
     this.currentPage = "dashboard";
     this.currentProductId = null;
     this.currentCustomerId = null;
+
+    const versionEl = document.getElementById("app-version-number");
+    if (versionEl) versionEl.textContent = APP_VERSION;
+
     this.initializeEventListeners();
     this.updateDateTime();
     setInterval(() => this.updateDateTime(), 1000);
