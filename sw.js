@@ -1,4 +1,4 @@
-const CACHE_NAME = "agri-v19";
+const CACHE_NAME = "agri-v20";
 
 const assets = [
   "./",
