@@ -32,6 +32,13 @@
                 if (
                   confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")
                 ) {
+                  document.body.innerHTML += `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--primary-color); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
+            <i class="fas fa-sync-alt fa-spin" style="font-size: 50px; margin-bottom: 20px;"></i>
+            <h2 style="margin:0;">جاري تثبيت التحديث الجديد...</h2>
+            <p style="margin-top:10px; opacity:0.8;">يرجى الانتظار لحظات ⏳</p>
+        </div>
+    `;
                   newWorker.postMessage({ type: "SKIP_WAITING" });
                 }
               }
