@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "1.0.17";
+const APP_VERSION = "1.0.18";
 
 class UIManager {
   constructor() {
@@ -2091,6 +2091,7 @@ class UIManager {
     }
   }
   // دالة فحص وتفعيل التحديثات الجديدة للنظام
+  // دالة فحص وتفعيل التحديثات الجديدة (النسخة النووية لكسر الكاش)
   async checkForUpdates() {
     const updateBtn = document.getElementById("check-update-btn");
     const originalText = updateBtn.innerHTML;
@@ -2102,38 +2103,37 @@ class UIManager {
 
     updateBtn.disabled = true;
     updateBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> جاري الفحص...';
+      '<i class="fas fa-spinner fa-spin"></i> جاري جلب التحديث...';
 
     try {
-      const registration = await navigator.serviceWorker.getRegistration();
-
-      if (registration) {
-        await registration.update();
+      // 1. إجبار الـ Service Worker على التحديث
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (let reg of registrations) {
+        await reg.update();
       }
 
-      // --- الحل الصاعق: ننتظر 3 ثواني فقط ---
-      setTimeout(() => {
-        // إذا التطبيق لساته عم يلف، رح نقوم بحركة "إعادة الإنعاش"
-        const hasUpdate =
-          registration && (registration.installing || registration.waiting);
-
-        if (hasUpdate) {
-          alert("✨ تم العثور على تحديث! سيتم إعادة التشغيل الآن لتفعيله.");
-        } else {
-          // حتى لو ما لقى تحديث رسمي، رح نعمل "Hard Refresh" لكسر أي كاش معلق
-          alert("✅ جاري التأكد من مزامنة النظام مع السيرفر...");
+      // 2. مسح الكاش برمجياً (تفريغ الذاكرة القديمة تماماً)
+      if ("caches" in window) {
+        const cacheNames = await caches.keys();
+        for (let name of cacheNames) {
+          await caches.delete(name);
         }
-        this.resetUpdateBtn(updateBtn, originalText);
-        // حركة "كسر الكاش" النهائية
-        window.location.href =
-          window.location.origin +
-          window.location.pathname +
-          "?update=" +
-          Date.now();
-      }, 3000);
+      }
+
+      // 3. رسالة للمستخدم وإعادة تحميل قسرية
+      alert(
+        "✨ تم تنظيف الذاكرة وجلب أحدث نسخة! سيتم إعادة تشغيل النظام الآن."
+      );
+
+      // إضافة رقم عشوائي للرابط تمنع المتصفح من استخدام الكاش نهائياً
+      window.location.href =
+        window.location.origin +
+        window.location.pathname +
+        "?v=" +
+        new Date().getTime();
     } catch (err) {
-      // إذا فشل كل شي، منعمل ريفريش عادي
-      window.location.reload(true);
+      alert("حدث خطأ أثناء التحديث، يرجى المحاولة لاحقاً.");
+      this.resetUpdateBtn(updateBtn, originalText);
     }
   }
   // دالة مساعدة لإعادة شكل الزر
