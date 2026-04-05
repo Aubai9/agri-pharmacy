@@ -1,7 +1,7 @@
-// غير الرقم لكي يعرف المتصفح أن هذا ملف جديد كلياً
-const CACHE_NAME = "agri-v29";
+const CACHE_NAME = "agri-v30"; // غيرنا الرقم لنجبره على التحديث
 
-const assets = [
+// 1. الملفات الأساسية فقط (لا تضع مسارات الخطوط هنا لتجنب انهيار النظام)
+const coreAssets = [
   "./",
   "./index.html",
   "./manifest.json",
@@ -11,25 +11,26 @@ const assets = [
   "./js/ui.js",
   "./js/app.js",
   "./vendor/fontawesome/css/all.min.css",
-  "./vendor/fontawesome/webfonts/fa-brands-400.ttf",
-  "./vendor/fontawesome/webfonts/fa-brands-400.woff2",
-  "./vendor/fontawesome/webfonts/fa-regular-400.ttf",
-  "./vendor/fontawesome/webfonts/fa-regular-400.woff2",
-  "./vendor/fontawesome/webfonts/fa-solid-900.ttf",
-  "./vendor/fontawesome/webfonts/fa-solid-900.woff2",
-  "./vendor/fontawesome/webfonts/fa-v4compatibility.ttf",
-  "./vendor/fontawesome/webfonts/fa-v4compatibility.woff2",
 ];
 
-// تنصيب وإجبار على التفعيل الفوري
+// 2. التثبيت وحفظ الملفات الأساسية
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(assets))
+    caches.open(CACHE_NAME).then((cache) => {
+      // نستخدم catch هنا لكي لا يموت النظام إذا فشل تحميل ملف واحد
+      return Promise.all(
+        coreAssets.map((url) => {
+          return cache
+            .add(url)
+            .catch((err) => console.log("فشل تحميل الملف:", url));
+        })
+      );
+    })
   );
 });
 
-// تفعيل ومسح الكاش القديم فوراً
+// 3. التفعيل ومسح الكاش القديم
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
   event.waitUntil(
@@ -45,40 +46,49 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// استراتيجية جلب الملفات (هنا يكمن السحر)
+// 4. استراتيجية الجلب الذكية (الكاش الديناميكي)
 self.addEventListener("fetch", (event) => {
-  // 1. بالنسبة لصفحة الـ HTML (الموقع نفسه): الإنترنت أولاً ثم الكاش
-  if (
-    event.request.mode === "navigate" ||
-    (event.request.headers.get("accept") &&
-      event.request.headers.get("accept").includes("text/html"))
-  ) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // تحديث الكاش بالنسخة الجديدة فوراً
-          const clone = response.clone();
-          caches
-            .open(CACHE_NAME)
-            .then((cache) => cache.put(event.request, clone));
-          return response;
+  // تجاهل الطلبات التي ليست من نوع GET
+  if (event.request.method !== "GET") return;
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      // إذا كان الملف موجوداً في الكاش، أرجعه فوراً (أوفلاين)
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      // إذا لم يكن في الكاش، اذهب للإنترنت، هاته، ثم احفظ نسخة منه في الكاش للمستقبل!
+      return fetch(event.request)
+        .then((networkResponse) => {
+          // التحقق من صحة الاستجابة
+          if (
+            !networkResponse ||
+            networkResponse.status !== 200 ||
+            networkResponse.type !== "basic"
+          ) {
+            return networkResponse;
+          }
+
+          // حفظ نسخة في الكاش
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return networkResponse;
         })
         .catch(() => {
-          // إذا كان أوفلاين، افتح من الكاش
-          return caches.match(event.request) || caches.match("./index.html");
-        })
-    );
-  } else {
-    // 2. بالنسبة لباقي الملفات (صور، CSS، JS): الكاش أولاً للسرعة
-    event.respondWith(
-      caches.match(event.request).then((cacheRes) => {
-        return cacheRes || fetch(event.request);
-      })
-    );
-  }
+          // إذا انقطع الإنترنت تماماً والملف غير موجود بالكاش، نعيد صفحة البداية
+          if (event.request.mode === "navigate") {
+            return caches.match("./index.html");
+          }
+        });
+    })
+  );
 });
 
-// استقبال أمر التحديث من زر "موافق"
+// استقبال أمر التحديث من المستخدم
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
