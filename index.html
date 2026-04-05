@@ -10,29 +10,33 @@
     <link rel="manifest" href="manifest.json" />
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("./sw.js")
-          .then((reg) => {
-            // كود الصورة رقم 3: مراقبة التحديث الجديد
-            reg.onupdatefound = () => {
-              const newWorker = reg.installing;
-              newWorker.onstatechange = () => {
-                if (newWorker.state === "installed") {
-                  if (navigator.serviceWorker.controller) {
-                    // إذا المستخدم ضغط "موافق" رح يعمل ريفريش وياخد النسخة الجديدة
-                    if (
-                      confirm(
-                        "✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟"
-                      )
-                    ) {
-                      window.location.reload();
-                    }
-                  }
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+          reg.onupdatefound = () => {
+            const newWorker = reg.installing;
+            newWorker.onstatechange = () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                if (
+                  confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")
+                ) {
+                  // إرسال أمر للنسخة الجديدة لتعمل فوراً
+                  newWorker.postMessage({ type: "SKIP_WAITING" });
                 }
-              };
+              }
             };
-          })
-          .catch((err) => console.error("PWA Error", err));
+          };
+        });
+
+        // هذا السطر يراقب التغيير ويقوم بعمل ريفريش تلقائي مرة واحدة فقط
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+          }
+        });
       }
     </script>
   </head>
@@ -703,7 +707,7 @@
                 <span
                   id="app-version-number"
                   style="font-weight: bold; color: var(--secondary-color)"
-                  >1.0.16</span
+                  >1.0.17</span
                 >
               </p>
               <p>آخر تحديث: <span id="last-update">لم يتم التحديث</span></p>

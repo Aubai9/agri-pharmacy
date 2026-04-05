@@ -1,4 +1,4 @@
-const CACHE_NAME = "agri-v20";
+const CACHE_NAME = "agri-v21";
 
 const assets = [
   "./",
@@ -56,4 +56,10 @@ self.addEventListener("fetch", (event) => {
       );
     })
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
