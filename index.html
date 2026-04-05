@@ -10,32 +10,33 @@
     <link rel="manifest" href="manifest.json" />
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js").then((reg) => {
-          reg.onupdatefound = () => {
-            const newWorker = reg.installing;
-            newWorker.onstatechange = () => {
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
-                if (
-                  confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")
-                ) {
-                  // إرسال أمر للنسخة الجديدة لتعمل فوراً
-                  newWorker.postMessage({ type: "SKIP_WAITING" });
-                }
-              }
-            };
-          };
-        });
-
-        // هذا السطر يراقب التغيير ويقوم بعمل ريفريش تلقائي مرة واحدة فقط
         let refreshing = false;
+
+        // هذا الحدث يعمل تلقائياً بمجرد أن تتفعل النسخة الجديدة ويقوم بعمل ريفريش نظيف
         navigator.serviceWorker.addEventListener("controllerchange", () => {
           if (!refreshing) {
             window.location.reload();
             refreshing = true;
           }
+        });
+
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+          reg.addEventListener("updatefound", () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener("statechange", () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                // ظهرت نسخة جديدة!
+                if (
+                  confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")
+                ) {
+                  newWorker.postMessage({ type: "SKIP_WAITING" });
+                }
+              }
+            });
+          });
         });
       }
     </script>
@@ -707,7 +708,7 @@
                 <span
                   id="app-version-number"
                   style="font-weight: bold; color: var(--secondary-color)"
-                  >1.0.18</span
+                  >1.0.19</span
                 >
               </p>
               <p>آخر تحديث: <span id="last-update">لم يتم التحديث</span></p>
