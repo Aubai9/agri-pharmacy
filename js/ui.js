@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "2.2.1";
+const APP_VERSION = "2.2.2";
 
 class UIManager {
   constructor() {
@@ -2098,40 +2098,33 @@ class UIManager {
   // دالة فحص وتفعيل التحديثات الجديدة (النسخة النووية لكسر الكاش)
   async checkForUpdates() {
     const updateBtn = document.getElementById("check-update-btn");
-    const originalText = updateBtn.innerHTML;
-
-    if (!navigator.onLine) {
-      alert("❌ يجب أن تكون متصلاً بالإنترنت للبحث عن تحديثات.");
-      return;
-    }
+    if (!navigator.onLine) return alert("❌ لا يوجد إنترنت");
 
     updateBtn.disabled = true;
     updateBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> جاري تنظيف النظام وتحديثه...';
+      '<i class="fas fa-spinner fa-spin"></i> جاري البحث...';
 
     try {
-      // 1. مسح كل الكاش القديم بالكامل
-      if ("caches" in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map((name) => caches.delete(name)));
-      }
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        // إجبار المتصفح على فحص التحديث من السيرفر مباشرة
+        await registration.update();
 
-      // 2. إلغاء تسجيل الـ Service Workers القديمة
-      if ("serviceWorker" in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let reg of registrations) {
-          await reg.unregister();
+        // إذا لم يجد تحديثاً تلقائياً، سنقوم بحركة "إعادة التسجيل" الإجبارية
+        if (!registration.waiting && !registration.installing) {
+          alert(
+            "النظام محدث لأخر نسخة، إذا كنت لا تزال ترى النسخة القديمة، سنقوم بعمل إعادة تشغيل ذكية."
+          );
+          window.location.href =
+            window.location.origin +
+            window.location.pathname +
+            "?v=" +
+            Date.now();
         }
       }
-
-      // 3. إعادة تحميل الصفحة من السيرفر مباشرة (تجاهل الكاش)
-      alert("✨ تم تنظيف الذاكرة! سيتم إعادة التشغيل لضمان جلب أحدث نسخة.");
-      window.location.href =
-        window.location.pathname + "?update=" + new Date().getTime();
     } catch (err) {
-      alert("حدث خطأ. يرجى المحاولة لاحقاً.");
-      updateBtn.disabled = false;
-      updateBtn.innerHTML = originalText;
+      console.error("Update error:", err);
+      window.location.reload(true); // ريفريش قسري كحل أخير
     }
   }
   // دالة مساعدة لإعادة شكل الزر

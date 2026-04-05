@@ -1,4 +1,4 @@
-const CACHE_NAME = "agri-v30"; // غيرنا الرقم لنجبره على التحديث
+const CACHE_NAME = "agri-v31"; // غيرنا الرقم لنجبره على التحديث
 
 // 1. الملفات الأساسية فقط (لا تضع مسارات الخطوط هنا لتجنب انهيار النظام)
 const coreAssets = [
@@ -88,7 +88,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// استقبال أمر التحديث من المستخدم
+// استلام الأمر من المتصفح لقتل النسخة القديمة فوراً
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();

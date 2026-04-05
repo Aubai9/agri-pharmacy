@@ -8,6 +8,46 @@
     <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" />
     <link rel="icon" type="image/png" href="icons/pharmacy.png" />
     <link rel="manifest" href="manifest.json" />
+    <script>
+      if ("serviceWorker" in navigator) {
+        // كود الصورة رقم 3: مراقبة التحديث الجديد
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+          // 1. فحص إذا كان هناك تحديث ينتظر بالفعل عند فتح الصفحة
+          if (reg.waiting) {
+            showUpdatePrompt(reg.waiting);
+          }
+
+          // 2. فحص إذا ظهر تحديث جديد أثناء تصفح الموقع
+          reg.onupdatefound = () => {
+            const newWorker = reg.installing;
+            newWorker.onstatechange = () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                showUpdatePrompt(newWorker);
+              }
+            };
+          };
+        });
+
+        // 3. إعادة تحميل الصفحة تلقائياً بمجرد تفعيل النسخة الجديدة
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+          }
+        });
+      }
+
+      // دالة إظهار رسالة التحديث
+      function showUpdatePrompt(worker) {
+        if (confirm("✨ يتوفر تحديث جديد للنظام! هل تريد التحديث الآن؟")) {
+          worker.postMessage({ type: "SKIP_WAITING" });
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
