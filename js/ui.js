@@ -89,7 +89,41 @@ class UIManager {
       );
     });
 
-    // 3. أزرار الفلترة في لوحة التحكم (Dashboard Tabs)
+    // 3. Event delegation للأزرار الديناميكية
+    document.addEventListener("click", (event) => {
+      // تعديل المنتج
+      if (event.target.closest(".edit-product-btn")) {
+        const btn = event.target.closest(".edit-product-btn");
+        const productId = parseInt(btn.dataset.id);
+        this.editProduct(productId);
+      }
+      // حذف المنتج
+      if (event.target.closest(".delete-product-btn")) {
+        const btn = event.target.closest(".delete-product-btn");
+        const productId = parseInt(btn.dataset.id);
+        this.deleteProduct(productId);
+      }
+      // تعديل العميل
+      if (event.target.closest(".edit-customer-btn")) {
+        const btn = event.target.closest(".edit-customer-btn");
+        const customerId = parseInt(btn.dataset.id);
+        this.editCustomer(customerId);
+      }
+      // حذف العميل
+      if (event.target.closest(".delete-customer-btn")) {
+        const btn = event.target.closest(".delete-customer-btn");
+        const customerId = parseInt(btn.dataset.id);
+        this.deleteCustomer(customerId);
+      }
+      // تاريخ العميل
+      if (event.target.closest(".customer-history-btn")) {
+        const btn = event.target.closest(".customer-history-btn");
+        const customerId = parseInt(btn.dataset.id);
+        this.loadCustomerQuickHistory(customerId);
+      }
+    });
+
+    // 4. أزرار الفلترة في لوحة التحكم (Dashboard Tabs)
     document.querySelectorAll(".filter-tab").forEach((tab) => {
       tab.addEventListener("click", () => {
         document
@@ -418,14 +452,14 @@ class UIManager {
         <td style="font-weight:bold">${this.formatCurrency(total)}</td>
         <td>
             <div style="display:flex; gap:5px">
-                <button class="action-btn" onclick="ui.editProduct(${
+                <button class="action-btn edit-product-btn" data-id="${
                   product.id
-                })" title="تعديل">
+                }" title="تعديل">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="action-btn delete" onclick="ui.deleteProduct(${
+                <button class="action-btn delete delete-product-btn" data-id="${
                   product.id
-                })" title="حذف">
+                }" title="حذف">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -881,9 +915,9 @@ class UIManager {
 
       const row = document.createElement("tr");
       row.innerHTML = `
-            <td style="cursor:pointer; color:var(--secondary-color); font-weight:bold" onclick="ui.loadCustomerQuickHistory(${
+            <td style="cursor:pointer; color:var(--secondary-color); font-weight:bold" class="customer-history-btn" data-id="${
               customer.id
-            })">
+            }">
                 ${customer.name}
             </td>
             <td>${customer.phone}</td>
@@ -893,12 +927,12 @@ class UIManager {
               balance > 0 ? "red" : "black"
             }">${this.formatCurrency(balance)}</td>
             <td>
-                <button class="action-btn" onclick="ui.editCustomer(${
+                <button class="action-btn edit-customer-btn" data-id="${
                   customer.id
-                })"><i class="fas fa-edit"></i></button>
-                <button class="action-btn delete" onclick="ui.deleteCustomer(${
+                }"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete delete-customer-btn" data-id="${
                   customer.id
-                })"><i class="fas fa-trash"></i></button>
+                }"><i class="fas fa-trash"></i></button>
             </td>
         `;
       tbody.appendChild(row);
@@ -1235,6 +1269,8 @@ class UIManager {
       try {
         const data = JSON.parse(e.target.result);
         db.importData(data);
+        // Re-assign ui to window to fix onclick handlers after import
+        window.ui = this;
         alert("تم استيراد البيانات بنجاح");
         this.refreshPageContent(this.currentPage);
       } catch (error) {
@@ -2139,5 +2175,6 @@ let ui;
 document.addEventListener("DOMContentLoaded", async () => {
   await db.ready();
   ui = new UIManager();
+  window.ui = ui; // Make ui globally accessible for onclick handlers
   ui.updateDashboard();
 });
