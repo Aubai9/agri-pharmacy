@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "2.2.2";
+const APP_VERSION = "3.2.2";
 
 class UIManager {
   constructor() {

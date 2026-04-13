@@ -6,7 +6,6 @@
 // Application configuration
 const APP_CONFIG = {
   name: "نظام الصيدلية الزراعية المتكامل",
-  version: "1.1.0",
   author: "Agricultural Pharmacy Systems",
   description: "نظام متكامل لإدارة نقطة البيع والمخزون ودفتر الصندوق",
 };
