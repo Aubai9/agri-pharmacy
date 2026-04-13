@@ -549,12 +549,12 @@
                 />
                 <button
                   class="btn"
-                  onclick="ui.exportReportToExcel()"
+                  onclick="window.ui.exportReportToExcel()"
                   style="background: #27ae60; color: white"
                 >
                   <i class="fas fa-file-excel"></i> حفظ كملف إكسيل
                 </button>
-                <button class="btn btn-primary" onclick="ui.loadProfitReport()">
+                <button class="btn btn-primary" onclick="window.ui.loadProfitReport()">
                   تحديث التقرير
                 </button>
               </div>
@@ -656,7 +656,7 @@
                 <h3>تفاصيل الفاتورة #<span id="detail-invoice-id"></span></h3>
                 <button
                   class="close-btn"
-                  onclick="ui.closeModal('invoice-details-modal')"
+                  onclick="window.ui.closeModal('invoice-details-modal')"
                 >
                   &times;
                 </button>
@@ -667,7 +667,7 @@
               <div class="modal-footer">
                 <button
                   class="btn btn-secondary"
-                  onclick="ui.closeModal('invoice-details-modal')"
+                  onclick="window.ui.closeModal('invoice-details-modal')"
                 >
                   إغلاق
                 </button>

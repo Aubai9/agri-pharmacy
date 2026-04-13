@@ -218,6 +218,12 @@ class UIManager {
     document
       .getElementById("clear-data-btn")
       .addEventListener("click", () => this.clearAllData());
+    
+    // Sales log search
+    const salesSearch = document.getElementById("sales-search");
+    if (salesSearch) {
+      salesSearch.addEventListener("input", () => this.loadSalesLog());
+    }
   }
 
   // دالة تسجيل الدخول
@@ -729,14 +735,14 @@ class UIManager {
       item.className = "invoice-item";
       item.setAttribute("data-product-id", product.id);
       item.innerHTML = `
-                <button class="invoice-item-remove" onclick="ui.removeFromInvoice(${
+                <button class="invoice-item-remove" onclick="window.ui.removeFromInvoice(${
                   product.id
                 })">&times;</button>
                 <div class="invoice-item-name">${product.name}</div>
                 <div class="invoice-item-qty">
                     <input type="number" value="1" min="1" max="${
                       product.stock_quantity
-                    }" onchange="ui.updateInvoiceTotal()">
+                    }" onchange="window.ui.updateInvoiceTotal()">
                 </div>
                 <div class="invoice-item-total">${this.formatCurrency(
                   product.selling_price
@@ -1381,7 +1387,7 @@ class UIManager {
           invoices.reverse().forEach((inv) => {
             total += inv.total_amount; // نجمع قيمة المبيعات
             const customer = inv.customer_id
-              ? db.getCustomerById(inv.customer_id)
+              ? db.getCustomerById(inv.customer_id) || { name: "عميل (محذوف)" }
               : { name: "عميل (نقدي)" };
             const statusHtml =
               inv.status === "paid"
@@ -1424,7 +1430,7 @@ class UIManager {
             .forEach((c) => {
               total += c.balance;
               tbody.innerHTML += `<tr>
-                    <td style="font-weight:bold; color:var(--secondary-color); cursor:pointer;" onclick="ui.navigateToPage('customers')" title="الذهاب لصفحة العميل">${
+                    <td style="font-weight:bold; color:var(--secondary-color); cursor:pointer;" onclick="window.ui.navigateToPage('customers')" title="الذهاب لصفحة العميل">${
                       c.name
                     }</td>
                     <td>${c.phone || "-"}</td>
@@ -1657,7 +1663,7 @@ class UIManager {
 
     invoices.reverse().forEach((inv) => {
       const customer = inv.customer_id
-        ? db.getCustomerById(inv.customer_id)
+        ? db.getCustomerById(inv.customer_id) || { name: "عميل (محذوف)" }
         : { name: "عميل نقدي" };
 
       // فحص البحث
@@ -1680,12 +1686,12 @@ class UIManager {
               inv.status === "paid" ? "success" : "warning"
             }">${inv.status === "paid" ? "مدفوع" : "دين"}</span></td>
             <td>
-                <button class="action-btn" onclick="ui.viewInvoiceDetails(${
+                <button class="action-btn" onclick="window.ui.viewInvoiceDetails(${
                   inv.id
-                })" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
-                <button class="action-btn delete" onclick="ui.deleteInvoice(${
+                })" title="عرض التفاصيل">👁️ عرض</button>
+                <button class="action-btn delete" onclick="window.ui.deleteInvoice(${
                   inv.id
-                })" title="إلغاء الفاتورة"><i class="fas fa-trash-alt"></i></button>
+                })" title="إلغاء الفاتورة">🗑️ حذف</button>
             </td>
         `;
       tbody.appendChild(row);
