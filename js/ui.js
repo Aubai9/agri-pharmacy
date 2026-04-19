@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "3.3.2";
+const APP_VERSION = "3.3.3";
 
 class UIManager {
   constructor() {
@@ -1512,7 +1512,48 @@ class UIManager {
         break;
 
       // ----------------------------------------------------
-      // 5: جرد المستودع (الكود اللي عملناه سابقاً)
+      // 5: إجمالي المخزون (عرض القيمة الإجمالية لكل القطع في المخزون)
+      // ----------------------------------------------------
+      case "total-stock":
+        totalLabel = "إجمالي قيمة المخزون: ";
+        thead.innerHTML = `<tr>
+            <th>اسم المنتج</th>
+            <th>الصنف</th>
+            <th>الكمية المتوفرة</th>
+            <th>سعر الوحدة</th>
+            <th>القيمة الإجمالية</th>
+        </tr>`;
+
+        const products = db.getProducts();
+        let totalQuantity = 0;
+        let totalValue = 0;
+
+        if (products.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا توجد منتجات في المخزون</td></tr>`;
+        } else {
+          products.forEach((product) => {
+            const quantity = product.stock_quantity || 0;
+            const unitPrice = product.selling_price || 0;
+            const itemTotalValue = quantity * unitPrice;
+            
+            totalQuantity += quantity;
+            totalValue += itemTotalValue;
+
+            tbody.innerHTML += `<tr>
+                <td style="font-weight:bold">${product.name}</td>
+                <td>${product.category || "-"}</td>
+                <td style="color: ${quantity <= 5 ? 'red' : 'green'}; font-weight:bold">${quantity}</td>
+                <td>${this.formatCurrency(unitPrice)}</td>
+                <td>${this.formatCurrency(itemTotalValue)}</td>
+            </tr>`;
+          });
+        }
+        
+        total = totalValue;
+        break;
+
+      // ----------------------------------------------------
+      // 6: جرد المستودع (الكود اللي عملناه سابقاً)
       // ----------------------------------------------------
       case "inventory":
         totalLabel = "إجمالي تكلفة البضاعة المضافة: ";
@@ -1542,9 +1583,8 @@ class UIManager {
 
     // تحديث شريط الإجمالي بالرقم والنص الصحيح
     if (totalDisplayArea) {
-      totalDisplayArea.innerHTML = `${totalLabel} <strong id="filter-total-value" style="font-size:18px;">${this.formatCurrency(
-        total
-      )}</strong>`;
+      const displayValue = this.formatCurrency(total);
+      totalDisplayArea.innerHTML = `${totalLabel} <strong id="filter-total-value" style="font-size:18px;">${displayValue}</strong>`;
     }
   }
 
