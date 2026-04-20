@@ -2,7 +2,7 @@
  * UI Management Module
  * Handles all UI interactions and modal management
  */
-const APP_VERSION = "3.3.3";
+const APP_VERSION = "4.3.3";
 
 class UIManager {
   constructor() {
@@ -1520,7 +1520,7 @@ class UIManager {
             <th>اسم المنتج</th>
             <th>الصنف</th>
             <th>الكمية المتوفرة</th>
-            <th>سعر الوحدة</th>
+            <th>سعر الشراء</th>
             <th>القيمة الإجمالية</th>
         </tr>`;
 
@@ -1533,7 +1533,7 @@ class UIManager {
         } else {
           products.forEach((product) => {
             const quantity = product.stock_quantity || 0;
-            const unitPrice = product.selling_price || 0;
+            const unitPrice = product.purchase_price || 0;
             const itemTotalValue = quantity * unitPrice;
             
             totalQuantity += quantity;
